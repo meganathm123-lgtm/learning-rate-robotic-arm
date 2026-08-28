@@ -1,0 +1,55 @@
+ROBOTIC ARM LEARNING RATE EXPERIMENT
+====================================
+
+Optimizer: Stochastic Gradient Descent (SGD)
+Dataset Size: 1000 samples
+Training Samples: 800
+Testing Samples: 200
+Epochs: 100
+Batch Size: 32
+
+LEARNING RATE COMPARISON
+------------------------
+
+Learning Rate: 0.001
+Final Training Loss: 0.178542
+Final Validation Loss: 0.169160
+Test Loss: 0.216001
+Test MAE: 0.336934
+Observed Behavior: Slow convergence
+
+Learning Rate: 0.05
+Final Training Loss: 0.003007
+Final Validation Loss: 0.003335
+Test Loss: 0.003925
+Test MAE: 0.038864
+Observed Behavior: Fast and stable convergence
+
+Learning Rate: 0.5
+Final Training Loss: 0.005495
+Final Validation Loss: 0.003959
+Test Loss: 0.004633
+Test MAE: 0.053636
+Observed Behavior: Fluctuating and less stable convergence
+
+BEST LEARNING RATE
+------------------
+
+Best Learning Rate: 0.05
+Test Loss: 0.003925
+Test MAE: 0.038864
+
+CONCLUSION
+----------
+
+A learning rate of 0.001 produces slow progress and requires more
+epochs to reach a low error.
+
+A learning rate of 0.05 provides the best balance between training
+speed, stability, and prediction performance.
+
+A learning rate of 0.5 produces greater fluctuations and gives
+slightly poorer test performance than 0.05.
+
+Therefore, 0.05 is selected as the best learning rate for this
+robotic-arm neural-network experiment.
