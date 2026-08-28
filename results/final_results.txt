@@ -1,55 +1,23 @@
-ROBOTIC ARM LEARNING RATE EXPERIMENT
-====================================
+ROBOTIC ARM LEARNING RATE ANALYSIS
+==================================================
 
-Optimizer: Stochastic Gradient Descent (SGD)
-Dataset Size: 1000 samples
-Training Samples: 800
-Testing Samples: 200
+Optimizer: SGD
 Epochs: 100
 Batch Size: 32
+Random Seed: 42
 
-LEARNING RATE COMPARISON
-------------------------
-
-Learning Rate: 0.001
-Final Training Loss: 0.178542
-Final Validation Loss: 0.169160
-Test Loss: 0.216001
-Test MAE: 0.336934
-Observed Behavior: Slow convergence
-
-Learning Rate: 0.05
-Final Training Loss: 0.003007
-Final Validation Loss: 0.003335
-Test Loss: 0.003925
-Test MAE: 0.038864
-Observed Behavior: Fast and stable convergence
-
-Learning Rate: 0.5
-Final Training Loss: 0.005495
-Final Validation Loss: 0.003959
-Test Loss: 0.004633
-Test MAE: 0.053636
-Observed Behavior: Fluctuating and less stable convergence
+LEARNING RATE RESULTS
+--------------------------------------------------
+ Learning Rate  Final Training Loss  Final Validation Loss  Test Loss  Test MAE  Average Validation Change  Final 20 Epoch Std
+         0.001             0.199571               0.200518   0.247371  0.388493                   0.008967            0.009437
+         0.050             0.002662               0.003358   0.003708  0.039016                   0.003407            0.000405
+         0.500             0.022764               0.058050   0.057704  0.204600                   0.023468            0.019123
 
 BEST LEARNING RATE
-------------------
+--------------------------------------------------
+Learning Rate: 0.05
+Test Loss: 0.003708
+Test MAE: 0.039016
 
-Best Learning Rate: 0.05
-Test Loss: 0.003925
-Test MAE: 0.038864
-
-CONCLUSION
-----------
-
-A learning rate of 0.001 produces slow progress and requires more
-epochs to reach a low error.
-
-A learning rate of 0.05 provides the best balance between training
-speed, stability, and prediction performance.
-
-A learning rate of 0.5 produces greater fluctuations and gives
-slightly poorer test performance than 0.05.
-
-Therefore, 0.05 is selected as the best learning rate for this
-robotic-arm neural-network experiment.
+Conclusion:
+A learning rate of 0.001 converges slowly. A learning rate of 0.5 produces greater fluctuations in the learning curves. The learning rate of 0.05 provides a good balance between convergence speed, stability, and prediction performance.

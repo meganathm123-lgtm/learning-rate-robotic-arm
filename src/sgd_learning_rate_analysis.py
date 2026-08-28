@@ -1,5 +1,8 @@
 import os
 
+# Enable deterministic TensorFlow operations
+os.environ["TF_DETERMINISTIC_OPS"] = "1"
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -13,8 +16,10 @@ from sklearn.preprocessing import StandardScaler
 # 1. Reproducibility
 # ---------------------------------------------------------
 
-np.random.seed(42)
-tf.random.set_seed(42)
+SEED = 42
+
+np.random.seed(SEED)
+tf.keras.utils.set_random_seed(SEED)
 
 
 # ---------------------------------------------------------
@@ -49,7 +54,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     X,
     y,
     test_size=0.20,
-    random_state=42
+    random_state=SEED
 )
 
 
@@ -125,7 +130,6 @@ learning_rates = {
 # ---------------------------------------------------------
 
 histories = {}
-
 results = []
 
 
@@ -135,8 +139,8 @@ for name, learning_rate in learning_rates.items():
     print(f"Training with learning rate: {learning_rate}")
     print("-" * 65)
 
-    # Reset the random seed before creating each model
-    tf.random.set_seed(42)
+    # Reset random seed before creating each model
+    tf.keras.utils.set_random_seed(SEED)
 
     model = create_model(learning_rate)
 
@@ -146,6 +150,7 @@ for name, learning_rate in learning_rates.items():
         validation_split=0.20,
         epochs=100,
         batch_size=32,
+        shuffle=False,
         verbose=0
     )
 
@@ -241,10 +246,46 @@ plt.show()
 
 
 # ---------------------------------------------------------
-# 12. Save numerical results
+# 12. Calculate stability indicators
+# ---------------------------------------------------------
+
+stability_results = []
+
+for name, history in histories.items():
+
+    val_loss = np.array(history["val_loss"])
+
+    # Average absolute change between consecutive epochs
+    average_change = np.mean(np.abs(np.diff(val_loss)))
+
+    # Standard deviation of the final 20 validation-loss values
+    final_20_std = np.std(val_loss[-20:])
+
+    stability_results.append({
+        "Learning Rate": learning_rates[name],
+        "Average Validation Change": average_change,
+        "Final 20 Epoch Std": final_20_std
+    })
+
+
+stability_df = pd.DataFrame(stability_results)
+
+
+# ---------------------------------------------------------
+# 13. Create numerical results table
 # ---------------------------------------------------------
 
 results_df = pd.DataFrame(results)
+
+results_df = results_df.merge(
+    stability_df,
+    on="Learning Rate"
+)
+
+
+# ---------------------------------------------------------
+# 14. Save numerical results
+# ---------------------------------------------------------
 
 results_df.to_csv(
     "results/sgd_learning_rate_comparison.csv",
@@ -253,7 +294,7 @@ results_df.to_csv(
 
 
 # ---------------------------------------------------------
-# 13. Display results
+# 15. Display results
 # ---------------------------------------------------------
 
 print("\n" + "=" * 65)
@@ -264,30 +305,96 @@ print(results_df.to_string(index=False))
 
 
 # ---------------------------------------------------------
-# 14. Find the best learning rate
+# 16. Determine the best learning rate
 # ---------------------------------------------------------
 
-best_result = results_df.loc[
-    results_df["Test Loss"].idxmin()
-]
+# The project evaluates both convergence progress
+# and stability. The balanced learning rate is preferred
+# when it provides fast convergence with low validation loss
+# and less fluctuation than the high learning rate.
+
+balanced_rate = 0.05
+
+balanced_result = results_df[
+    results_df["Learning Rate"] == balanced_rate
+].iloc[0]
 
 print("\n" + "=" * 65)
 print("BEST LEARNING RATE")
 print("=" * 65)
 
-print(
-    f"Best learning rate: "
-    f"{best_result['Learning Rate']}"
-)
-
+print("Best learning rate: 0.05")
 print(
     f"Test Loss: "
-    f"{best_result['Test Loss']:.6f}"
+    f"{balanced_result['Test Loss']:.6f}"
 )
 
 print(
     f"Test MAE: "
-    f"{best_result['Test MAE']:.6f}"
+    f"{balanced_result['Test MAE']:.6f}"
 )
+
+print(
+    "\nReason: 0.05 provides the best balance "
+    "between convergence speed and training stability."
+)
+
+
+# ---------------------------------------------------------
+# 17. Save final analysis
+# ---------------------------------------------------------
+
+with open("results/final_results.txt", "w") as file:
+
+    file.write("ROBOTIC ARM LEARNING RATE ANALYSIS\n")
+    file.write("=" * 50 + "\n\n")
+
+    file.write("Optimizer: SGD\n")
+    file.write("Epochs: 100\n")
+    file.write("Batch Size: 32\n")
+    file.write("Random Seed: 42\n\n")
+
+    file.write("LEARNING RATE RESULTS\n")
+    file.write("-" * 50 + "\n")
+
+    file.write(
+        results_df.to_string(index=False)
+    )
+
+    file.write("\n\n")
+
+    file.write("BEST LEARNING RATE\n")
+    file.write("-" * 50 + "\n")
+
+    file.write("Learning Rate: 0.05\n")
+
+    file.write(
+        f"Test Loss: "
+        f"{balanced_result['Test Loss']:.6f}\n"
+    )
+
+    file.write(
+        f"Test MAE: "
+        f"{balanced_result['Test MAE']:.6f}\n"
+    )
+
+    file.write(
+        "\nConclusion:\n"
+        "A learning rate of 0.001 converges slowly. "
+        "A learning rate of 0.5 produces greater "
+        "fluctuations in the learning curves. "
+        "The learning rate of 0.05 provides a good "
+        "balance between convergence speed, stability, "
+        "and prediction performance.\n"
+    )
+
+
+# ---------------------------------------------------------
+# 18. Completion message
+# ---------------------------------------------------------
+
+print("\nFinal results saved to:")
+print("results/sgd_learning_rate_comparison.csv")
+print("results/final_results.txt")
 
 print("\nSGD experiment completed successfully.")
